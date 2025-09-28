@@ -1936,20 +1936,21 @@ __conn_single(WT_SESSION_IMPL *session, const char *cfg[])
             WT_ERR_MSG(
               session, EBUSY, "WiredTiger database is already being managed by another process");
 
-/*
- * If the size of the lock file is non-zero, we created it (or won a locking race with the thread
- * that created it, it doesn't matter).
- *
- * Write something into the file, zero-length files make me nervous.
- *
- * The test against the expected length is sheer paranoia (the length should be 0 or correct), but
- * it shouldn't hurt.
- */
-#define WT_SINGLETHREAD_STRING "WiredTiger lock file\n"
+        /*
+         * If the size of the lock file is non-zero, we created it (or won a locking race with the
+         * thread that created it, it doesn't matter).
+         *
+         * Write something into the file, zero-length files make me nervous.
+         *
+         * The test against the expected length is sheer paranoia (the length should be 0 or
+         * correct), but it shouldn't hurt.
+         */
+        const char *wt_single_thread_string = "WiredTiger lock file\n";
+
         WT_ERR(__wt_filesize(session, conn->lock_fh, &size));
-        if ((size_t)size != strlen(WT_SINGLETHREAD_STRING))
-            WT_ERR(__wt_write(session, conn->lock_fh, (wt_off_t)0, strlen(WT_SINGLETHREAD_STRING),
-              WT_SINGLETHREAD_STRING));
+        if ((size_t)size != strlen(wt_single_thread_string))
+            WT_ERR(__wt_write(session, conn->lock_fh, (wt_off_t)0, strlen(wt_single_thread_string),
+              wt_single_thread_string));
     }
 
     /*
