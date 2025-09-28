@@ -277,7 +277,7 @@ __schema_open_index(
         }
 
         /* Is this the index we are looking for? */
-        match = idxname == NULL || WT_STRING_MATCH(name, idxname, len);
+        match = (idxname == NULL) || WT_STRING_MATCH(name, idxname, len);
 
         /*
          * Ensure there is space, including if we have to make room for a new entry in the middle of

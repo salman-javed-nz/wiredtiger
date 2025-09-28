@@ -265,7 +265,7 @@ do_random_crud(scoped_session &session, const int64_t collection_count, const in
   const bool fresh_start, const std::string &conn_config, const std::string &home,
   const bool allow_reopen = true, bool subdirectory = false)
 {
-    bool file_created = fresh_start == false;
+    bool file_created = (fresh_start == false);
 
     /* Insert random data. */
     std::string key, value;
@@ -393,7 +393,7 @@ run_restore(const std::string &home, const std::string &source, const int64_t th
   const bool die, const bool recovery, bool subdirectory)
 {
     /* Create a connection, set the cache size and specify the home directory. */
-    const std::string verbose_string = verbose_level == 0 ?
+    const std::string verbose_string = (verbose_level == 0) ?
       "" :
       "verbose=[recovery:1,recovery_progress:1,live_restore_progress,live_restore:" +
         std::to_string(verbose_level) + "]";
