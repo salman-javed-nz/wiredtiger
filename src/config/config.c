@@ -573,7 +573,7 @@ __wti_config_get(
     WT_DECL_RET;
     const char **cfg;
 
-    if (cfg_arg[0] == NULL)
+    if (cfg_arg == NULL || cfg_arg[0] == NULL)
         return (WT_NOTFOUND);
 
     /*
