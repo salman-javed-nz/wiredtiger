@@ -40,8 +40,8 @@ __wt_futex_wake
 __wt_lex_compare
 __wt_lex_compare_skip
 __wt_log_scan
-__wt_nlpo2
-__wt_nlpo2_round
+__wt_next_largest_pow2
+__wt_round_next_largest_pow2
 __wt_page_from_npos
 __wt_page_from_npos_for_read
 __wt_session_breakpoint

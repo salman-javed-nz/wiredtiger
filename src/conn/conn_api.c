@@ -1755,12 +1755,12 @@ __conn_hash_config(WT_SESSION_IMPL *session, const char *cfg[])
 
     conn = S2C(session);
     WT_RET(__wt_config_gets(session, cfg, "hash.buckets", &cval));
-    if (!__wt_ispo2((uint32_t)cval.val))
+    if (!__wt_is_pow2((uint32_t)cval.val))
         WT_RET_MSG(session, EINVAL, "Hash bucket size %" PRIu64 " invalid. Must be power of 2",
           (uint64_t)cval.val);
     conn->hash_size = (uint64_t)cval.val;
     WT_RET(__wt_config_gets(session, cfg, "hash.dhandle_buckets", &cval));
-    if (!__wt_ispo2((uint32_t)cval.val))
+    if (!__wt_is_pow2((uint32_t)cval.val))
         WT_RET_MSG(session, EINVAL,
           "Data handle hash bucket size %" PRIu64 " invalid. Must be power of 2",
           (uint64_t)cval.val);

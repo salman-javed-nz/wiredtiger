@@ -2123,7 +2123,7 @@ __wt_os_live_restore_fs(
     /* Configure the read size. */
     WT_ERR(__wt_config_gets(session, cfg, "live_restore.read_size", &cval));
     lr_fs->read_size = (uint64_t)cval.val;
-    if (!__wt_ispo2((uint32_t)lr_fs->read_size))
+    if (!__wt_is_pow2((uint32_t)lr_fs->read_size))
         WT_ERR_MSG(session, EINVAL, "the live restore read size must be a power of two");
 
     WT_ERR(__wt_spin_init(session, &lr_fs->state_lock, "live restore state lock"));

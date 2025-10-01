@@ -2286,7 +2286,7 @@ advance:
             /* Last record in log.  Look for more. */
             goto advance;
         }
-        rdup_len = __wt_rduppo2(reclen, allocsize);
+        rdup_len = __wt_round_up_pow2(reclen, allocsize);
         if (reclen > allocsize) {
             /*
              * The log file end could be the middle of this log record. If we have a partially
@@ -2630,7 +2630,7 @@ __log_write_internal(WT_SESSION_IMPL *session, WT_ITEM *record, WT_LSN *lsnp, ui
      * the full amount because it makes the reading code cleaner.
      */
     WT_STAT_CONN_INCRV(session, log_bytes_payload, record->size);
-    rdup_len = __wt_rduppo2((uint32_t)record->size, WTI_LOG_ALIGN);
+    rdup_len = __wt_round_up_pow2((uint32_t)record->size, WTI_LOG_ALIGN);
     WT_ERR(__wt_buf_grow(session, record, rdup_len));
     WT_ASSERT(session, record->data == record->mem);
     /*

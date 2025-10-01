@@ -37,46 +37,46 @@ TEST_CASE("Power functions: log2_int", "[pow]")
 TEST_CASE("Power functions: ispo2", "[pow]")
 {
     // This is mathematically wrong, but makes sense for how it's used.
-    REQUIRE(__wt_ispo2(0) == true);
+    REQUIRE(__wt_is_pow2(0) == true);
 
-    REQUIRE(__wt_ispo2(1) == true);
-    REQUIRE(__wt_ispo2(2) == true);
-    REQUIRE(__wt_ispo2(3) == false);
-    REQUIRE(__wt_ispo2(4) == true);
-    REQUIRE(__wt_ispo2(6) == false);
-    REQUIRE(__wt_ispo2(8) == true);
-    REQUIRE(__wt_ispo2(16) == true);
-    REQUIRE(__wt_ispo2(32) == true);
+    REQUIRE(__wt_is_pow2(1) == true);
+    REQUIRE(__wt_is_pow2(2) == true);
+    REQUIRE(__wt_is_pow2(3) == false);
+    REQUIRE(__wt_is_pow2(4) == true);
+    REQUIRE(__wt_is_pow2(6) == false);
+    REQUIRE(__wt_is_pow2(8) == true);
+    REQUIRE(__wt_is_pow2(16) == true);
+    REQUIRE(__wt_is_pow2(32) == true);
 
-    REQUIRE(__wt_ispo2(0x10000000) == true);
-    REQUIRE(__wt_ispo2(0x20000000) == true);
-    REQUIRE(__wt_ispo2(0x40000000) == true);
+    REQUIRE(__wt_is_pow2(0x10000000) == true);
+    REQUIRE(__wt_is_pow2(0x20000000) == true);
+    REQUIRE(__wt_is_pow2(0x40000000) == true);
 
-    REQUIRE(__wt_ispo2(0x80000000 - 1) == false);
-    REQUIRE(__wt_ispo2(0x80000000) == true);
-    REQUIRE(__wt_ispo2(0x80000000 + 1) == false);
+    REQUIRE(__wt_is_pow2(0x80000000 - 1) == false);
+    REQUIRE(__wt_is_pow2(0x80000000) == true);
+    REQUIRE(__wt_is_pow2(0x80000000 + 1) == false);
 
-    REQUIRE(__wt_ispo2(0xffffffff) == false);
+    REQUIRE(__wt_is_pow2(0xffffffff) == false);
 }
 
 TEST_CASE("Power functions: rduppo2", "[pow]")
 {
     // Expected valid calls, where the 2nd param is a power of two.
-    REQUIRE(__wt_rduppo2(0, 8) == 0);
-    REQUIRE(__wt_rduppo2(1, 8) == 8);
-    REQUIRE(__wt_rduppo2(9, 8) == 16);
-    REQUIRE(__wt_rduppo2(24, 8) == 24);
-    REQUIRE(__wt_rduppo2(42, 8) == 48);
+    REQUIRE(__wt_round_up_pow2(0, 8) == 0);
+    REQUIRE(__wt_round_up_pow2(1, 8) == 8);
+    REQUIRE(__wt_round_up_pow2(9, 8) == 16);
+    REQUIRE(__wt_round_up_pow2(24, 8) == 24);
+    REQUIRE(__wt_round_up_pow2(42, 8) == 48);
 
-    REQUIRE(__wt_rduppo2(0, 32) == 0);
-    REQUIRE(__wt_rduppo2(1, 32) == 32);
-    REQUIRE(__wt_rduppo2(24, 32) == 32);
-    REQUIRE(__wt_rduppo2(42, 32) == 64);
-    REQUIRE(__wt_rduppo2(42, 128) == 128);
+    REQUIRE(__wt_round_up_pow2(0, 32) == 0);
+    REQUIRE(__wt_round_up_pow2(1, 32) == 32);
+    REQUIRE(__wt_round_up_pow2(24, 32) == 32);
+    REQUIRE(__wt_round_up_pow2(42, 32) == 64);
+    REQUIRE(__wt_round_up_pow2(42, 128) == 128);
 
     // Expected invalid calls, where the 2nd param is NOT a power of two,
     // and therefore the return value should be 0.
-    REQUIRE(__wt_rduppo2(1, 7) == 0);
-    REQUIRE(__wt_rduppo2(1, 42) == 0);
-    REQUIRE(__wt_rduppo2(102, 42) == 0);
+    REQUIRE(__wt_round_up_pow2(1, 7) == 0);
+    REQUIRE(__wt_round_up_pow2(1, 42) == 0);
+    REQUIRE(__wt_round_up_pow2(102, 42) == 0);
 }

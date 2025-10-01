@@ -12,26 +12,26 @@
 #include "../../wrappers/block_mods.h"
 #include "../../wrappers/mock_session.h"
 
-TEST_CASE("Block manager: helper function __wt_rduppo2", "[block]")
+TEST_CASE("Block manager: helper function __wt_round_up_pow2", "[block]")
 {
     // Expected valid calls, where the 2nd param is a power of two
-    REQUIRE(__wt_rduppo2(0, 8) == 0);
-    REQUIRE(__wt_rduppo2(1, 8) == 8);
-    REQUIRE(__wt_rduppo2(9, 8) == 16);
-    REQUIRE(__wt_rduppo2(24, 8) == 24);
-    REQUIRE(__wt_rduppo2(42, 8) == 48);
+    REQUIRE(__wt_round_up_pow2(0, 8) == 0);
+    REQUIRE(__wt_round_up_pow2(1, 8) == 8);
+    REQUIRE(__wt_round_up_pow2(9, 8) == 16);
+    REQUIRE(__wt_round_up_pow2(24, 8) == 24);
+    REQUIRE(__wt_round_up_pow2(42, 8) == 48);
 
-    REQUIRE(__wt_rduppo2(0, 32) == 0);
-    REQUIRE(__wt_rduppo2(1, 32) == 32);
-    REQUIRE(__wt_rduppo2(24, 32) == 32);
-    REQUIRE(__wt_rduppo2(42, 32) == 64);
-    REQUIRE(__wt_rduppo2(42, 128) == 128);
+    REQUIRE(__wt_round_up_pow2(0, 32) == 0);
+    REQUIRE(__wt_round_up_pow2(1, 32) == 32);
+    REQUIRE(__wt_round_up_pow2(24, 32) == 32);
+    REQUIRE(__wt_round_up_pow2(42, 32) == 64);
+    REQUIRE(__wt_round_up_pow2(42, 128) == 128);
 
     // Expected invalid calls, where the 2nd param is NOT a power of two,
     // and therefore the return value should be 0
-    REQUIRE(__wt_rduppo2(1, 7) == 0);
-    REQUIRE(__wt_rduppo2(1, 42) == 0);
-    REQUIRE(__wt_rduppo2(102, 42) == 0);
+    REQUIRE(__wt_round_up_pow2(1, 7) == 0);
+    REQUIRE(__wt_round_up_pow2(1, 42) == 0);
+    REQUIRE(__wt_round_up_pow2(102, 42) == 0);
 }
 
 static void

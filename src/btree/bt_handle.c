@@ -1034,7 +1034,7 @@ __btree_page_sizes(WT_SESSION_IMPL *session)
     WT_RET(__wt_config_gets(session, cfg, "allocation_size", &cval));
     btree->allocsize = (uint32_t)cval.val;
 
-    if (!__wt_ispo2(btree->allocsize))
+    if (!__wt_is_pow2(btree->allocsize))
         WT_RET_MSG(session, EINVAL, "the allocation size must be a power of two");
 
     /*

@@ -31,7 +31,7 @@
 #ifdef __WIREDTIGER_UNUSED__
 
 /*
- * __wt_nlpo2_round --
+ * __wt_round_next_largest_pow2 --
  *     Round up to the next-largest power-of-two for a 32-bit unsigned value. In 12 operations, this
  *     code computes the next highest power of 2 for a 32-bit integer. The result may be expressed
  *     by the formula 1U << (lg(v - 1) + 1). Note that in the edge case where v is 0, it returns 0,
@@ -50,7 +50,7 @@
  *     seander@cs.stanford.edu
  */
 uint32_t
-__wt_nlpo2_round(uint32_t v)
+__wt_round_next_largest_pow2(uint32_t v)
 {
     v--; /* If v is a power-of-two, return it. */
     v |= v >> 1;
@@ -62,11 +62,11 @@ __wt_nlpo2_round(uint32_t v)
 }
 
 /*
- * __wt_nlpo2 --
+ * __wt_next_largest_pow2 --
  *     Return the next largest power-of-two.
  */
 uint32_t
-__wt_nlpo2(uint32_t v)
+__wt_next_largest_pow2(uint32_t v)
 {
     v |= v >> 1;
     v |= v >> 2;
@@ -94,11 +94,11 @@ __wt_log2_int(uint32_t n)
 }
 
 /*
- * __wt_ispo2 --
+ * __wt_is_pow2 --
  *     Return if a number is a power-of-two.
  */
 bool
-__wt_ispo2(uint32_t v)
+__wt_is_pow2(uint32_t v)
 {
     /*
      * Only numbers that are powers of two will satisfy the relationship (v & (v - 1) == 0).
@@ -110,15 +110,15 @@ __wt_ispo2(uint32_t v)
 }
 
 /*
- * __wt_rduppo2 --
+ * __wt_round_up_pow2 --
  *     Round the given int up to the next multiple of N, where N is power of 2.
  */
 uint32_t
-__wt_rduppo2(uint32_t n, uint32_t po2)
+__wt_round_up_pow2(uint32_t n, uint32_t po2)
 {
     uint32_t bits, res;
 
-    if (__wt_ispo2(po2)) {
+    if (__wt_is_pow2(po2)) {
         bits = __wt_log2_int(po2);
         res = (((n - 1) >> bits) + 1) << bits;
     } else

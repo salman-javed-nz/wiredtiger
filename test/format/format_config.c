@@ -2090,7 +2090,7 @@ config_single(TABLE *table, const char *s, bool explicit)
 
     if (F_ISSET(cp, C_POW2)) {
         v1 = atou32(s, equalp, '\0');
-        if (v1 != 0 && !__wt_ispo2(v1))
+        if (v1 != 0 && !__wt_is_pow2(v1))
             testutil_die(EINVAL, "%s: %s: value is not a power of 2", progname, s);
 
         v->v = v1;
