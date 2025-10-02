@@ -239,10 +239,6 @@ tiered_config = [
     Config('tiered_storage', '', r'''
         configure a storage source for this table''',
         type='category', subconfig=[
-        Config('name', 'none', r'''
-            permitted values are \c "none" or a custom storage source name created with
-            WT_CONNECTION::add_storage_source. See @ref custom_storage_sources for more
-            information'''),
         Config('auth_token', '', r'''
             authentication string identifier'''),
         Config('bucket', '', r'''
@@ -257,6 +253,10 @@ tiered_config = [
             time in seconds to retain data on tiered storage on the local tier for faster
             read access''',
             min='0', max='10000'),
+        Config('name', 'none', r'''
+            permitted values are \c "none" or a custom storage source name created with
+            WT_CONNECTION::add_storage_source. See @ref custom_storage_sources for more
+            information'''),
         Config('object_target_size', '0', r'''
             this option is no longer supported, retained for backward compatibility''',
             min='0', undoc=True),
@@ -300,30 +300,30 @@ file_runtime_config = common_runtime_config + log_runtime_config + [
         do not ever evict the object's pages from cache, see @ref tuning_cache_resident for more
         information''',
         type='boolean'),
-    Config('os_cache_max', '0', r'''
-        maximum system buffer cache usage, in bytes. If non-zero, evict object blocks from
-        the system buffer cache after that many bytes from this object are read or written into
-        the buffer cache''',
-        min=0),
     Config('os_cache_dirty_max', '0', r'''
         maximum dirty system buffer cache usage, in bytes. If non-zero, schedule writes for
         dirty blocks belonging to this object in the system buffer cache after that many bytes
         from this object are written into the buffer cache''',
         min=0),
+    Config('os_cache_max', '0', r'''
+        maximum system buffer cache usage, in bytes. If non-zero, evict object blocks from
+        the system buffer cache after that many bytes from this object are read or written into
+        the buffer cache''',
+        min=0),
 ]
 
 # Per-file configuration
 file_config = format_meta + file_runtime_config + tiered_config + file_disaggregated_config + [
-    Config('block_allocation', 'best', r'''
-        configure block allocation. Permitted values are \c "best" or \c "first"; the \c "best"
-        configuration uses a best-fit algorithm, the \c "first" configuration uses a
-        first-available algorithm during block allocation''',
-        choices=['best', 'first',]),
     Config('allocation_size', '4KB', r'''
         the file unit allocation size, in bytes, must be a power of two; smaller values decrease
         the file space required by overflow items, and the default value of 4KB is a good choice
         absent requirements from the operating system or storage device''',
         min='512B', max='128MB'),
+    Config('block_allocation', 'best', r'''
+        configure block allocation. Permitted values are \c "best" or \c "first"; the \c "best"
+        configuration uses a best-fit algorithm, the \c "first" configuration uses a
+        first-available algorithm during block allocation''',
+        choices=['best', 'first',]),
     Config('block_compressor', 'none', r'''
         configure a compressor for file blocks. Permitted values are \c "none" or a custom
         compression engine name created with WT_CONNECTION::add_compressor. If WiredTiger
@@ -349,14 +349,14 @@ file_config = format_meta + file_runtime_config + tiered_config + file_disaggreg
         configure an encryptor for file blocks. When a table is created, its encryptor is not
         implicitly used for any related indices or column groups''',
         type='category', subconfig=[
-        Config('name', 'none', r'''
-            Permitted values are \c "none" or a custom encryption engine name created with
-            WT_CONNECTION::add_encryptor. See @ref encryption for more information'''),
         Config('keyid', '', r'''
             An identifier that identifies a unique instance of the encryptor. It is stored in
             clear text, and thus is available when the WiredTiger database is reopened. On the
             first use of a (name, keyid) combination, the WT_ENCRYPTOR::customize function is
             called with the keyid as an argument'''),
+        Config('name', 'none', r'''
+            Permitted values are \c "none" or a custom encryption engine name created with
+            WT_CONNECTION::add_encryptor. See @ref encryption for more information'''),
         ]),
     Config('format', 'btree', r'''
         the file format''',
@@ -392,6 +392,9 @@ file_config = format_meta + file_runtime_config + tiered_config + file_disaggreg
     Config('key_gap', '10', r'''
         This option is no longer supported, retained for backward compatibility''',
         min='0'),
+    Config('leaf_item_max', '0', r'''
+        This option is no longer supported, retained for backward compatibility''',
+        min=0, undoc=True),
     Config('leaf_key_max', '0', r'''
         the largest key stored in a leaf node, in bytes. If set, keys larger than the specified
         size are stored as overflow items (which may require additional I/O to access).
@@ -412,9 +415,6 @@ file_config = format_meta + file_runtime_config + tiered_config + file_disaggreg
         temporarily ignored when large values are written. The default is one-half the size of
         a newly split leaf page''',
         min='0'),
-    Config('leaf_item_max', '0', r'''
-        This option is no longer supported, retained for backward compatibility''',
-        min=0, undoc=True),
     Config('memory_page_image_max', '0', r'''
         the maximum in-memory page image represented by a single storage block. Depending on
         compression efficiency, compression can create storage blocks which require significant
@@ -541,6 +541,9 @@ connection_runtime_config = [
     Config('block_cache', '', r'''
         block cache configuration options''',
         type='category', subconfig=[
+        Config('blkcache_eviction_aggression', '1800', r'''
+            seconds an unused block remains in the cache before it is evicted''',
+            min='1', max='7200'),
         Config('cache_on_checkpoint', 'true', r'''
             cache blocks written by a checkpoint''',
             type='boolean'),
@@ -550,16 +553,10 @@ connection_runtime_config = [
         Config('enabled', 'false', r'''
             enable block cache''',
             type='boolean'),
-        Config('blkcache_eviction_aggression', '1800', r'''
-            seconds an unused block remains in the cache before it is evicted''',
-            min='1', max='7200'),
         Config('full_target', '95', r'''
             the fraction of the block cache that must be full before eviction will remove
             unused blocks''',
             min='30', max='100'),
-        Config('size', '0', r'''
-            maximum memory to allocate for the block cache''',
-            min='0', max='10TB'),
         Config('hashsize', '32768', r'''
             number of buckets in the hashtable that keeps track of blocks''',
             min='512', max='256K'),
@@ -574,6 +571,9 @@ connection_runtime_config = [
             bypass cache for a file if the set percentage of the file fits in system DRAM
             (as specified by block_cache.system_ram)''',
             min='0', max='100'),
+        Config('size', '0', r'''
+            maximum memory to allocate for the block cache''',
+            min='0', max='10TB'),
         Config('system_ram', '0', r'''
             the bytes of system DRAM available for caching filesystem blocks''',
             min='0', max='1024GB'),
@@ -583,6 +583,15 @@ connection_runtime_config = [
     Config('cache_eviction_controls', '', r'''
         Controls the experimental incremental cache eviction features.''',
         type='category', subconfig=[
+            Config('app_eviction_min_cache_fill_ratio', '0', r'''
+                This setting establishes a minimum cache fill ratio that must be met before
+                application threads can start assisting with eviction. The value is a percentage
+                between 0 and 50, with 0 disabling the feature. For it to have any effect, this
+                minimum ratio must be higher than the existing \c eviction_dirty_trigger or
+                \c eviction_update_trigger and less than \c eviction_trigger. Essentially, the
+                standard dirty or update triggers won't become active until the cache fill ratio
+                first reaches this new, higher threshold.''',
+                min='0', max='50'),
             Config('cache_tolerance_for_app_eviction', '0', r'''
                 This setting establishes a tolerance level for the configured
                 \c eviction_dirty_trigger and \c eviction_update_trigger.
@@ -599,27 +608,10 @@ connection_runtime_config = [
                 r'''Change the eviction strategy to scrub eviction when the cache usage is under
                 the target limit.''',
                 type='boolean'),
-            Config('app_eviction_min_cache_fill_ratio', '0', r'''
-                This setting establishes a minimum cache fill ratio that must be met before
-                application threads can start assisting with eviction. The value is a percentage
-                between 0 and 50, with 0 disabling the feature. For it to have any effect, this
-                minimum ratio must be higher than the existing \c eviction_dirty_trigger or
-                \c eviction_update_trigger and less than \c eviction_trigger. Essentially, the
-                standard dirty or update triggers won't become active until the cache fill ratio
-                first reaches this new, higher threshold.''',
-                min='0', max='50'),
         ]),
-    Config('cache_size', '100MB', r'''
-        maximum heap memory to allocate for the cache. A database should configure either
-        \c cache_size or \c shared_cache but not both''',
-        min='1MB', max='10TB'),
     Config('cache_max_wait_ms', '0', r'''
         the maximum number of milliseconds an application thread will wait for space to be
         available in cache before giving up. Default or 0 will wait forever. 1 will never wait''',
-        min=0),
-    Config('cache_stuck_timeout_ms', '300000', r'''
-        the number of milliseconds to wait before a stuck cache times out in diagnostic mode.
-        Default will wait for 5 minutes, 0 will wait forever''',
         min=0),
     Config('cache_overhead', '8', r'''
         assume the heap allocator overhead is the specified percentage, and adjust the cache
@@ -629,6 +621,14 @@ connection_runtime_config = [
         heap allocation sizes and patterns, therefore applications may need to adjust this
         value based on allocator choice and behavior in measured workloads''',
         min='0', max='30'),
+    Config('cache_size', '100MB', r'''
+        maximum heap memory to allocate for the cache. A database should configure either
+        \c cache_size or \c shared_cache but not both''',
+        min='1MB', max='10TB'),
+    Config('cache_stuck_timeout_ms', '300000', r'''
+        the number of milliseconds to wait before a stuck cache times out in diagnostic mode.
+        Default will wait for 5 minutes, 0 will wait forever''',
+        min=0),
     Config('checkpoint', '', r'''
         periodically checkpoint the database. Enabling the checkpoint server uses a session
         from the configured \c session_max''',
@@ -647,6 +647,10 @@ connection_runtime_config = [
     Config('checkpoint_cleanup', '', r'''
         periodically checkpoint cleanup the database.''',
         type='category', subconfig=[
+        Config('file_wait_ms', '0', r'''
+            the number of milliseconds to wait between each file by the checkpoint cleanup,
+            0 will not wait''',
+            min=0),
         Config('method', 'none', r'''
             control how aggressively obsolete content is removed by reading the internal pages.
             Default to none, which means no additional work is done to find obsolete content.
@@ -654,10 +658,6 @@ connection_runtime_config = [
         Config('wait', '300', r'''
             seconds to wait between each checkpoint cleanup''',
             min='1', max='100000'),
-        Config('file_wait_ms', '0', r'''
-            the number of milliseconds to wait between each file by the checkpoint cleanup,
-            0 will not wait''',
-            min=0),
         ]),
     Config('debug_mode', '', r'''
         control the settings of various extended debugging features''',
@@ -666,9 +666,6 @@ connection_runtime_config = [
                if true, background compact aggressively removes compact statistics for a file and
                decreases the max amount of time a file can be skipped for.''',
                type='boolean'),
-        Config('corruption_abort', 'true', r'''
-            if true and built in diagnostic mode, dump core in the case of data corruption''',
-            type='boolean'),
         Config('checkpoint_retention', '0', r'''
             adjust log removal to retain the log records of this number of checkpoints. Zero
             or one means perform normal removal.''',
@@ -676,6 +673,9 @@ connection_runtime_config = [
         Config('configuration', 'false', r'''
                if true, display invalid cache configuration warnings.''',
                type='boolean'),
+        Config('corruption_abort', 'true', r'''
+            if true and built in diagnostic mode, dump core in the case of data corruption''',
+            type='boolean'),
         Config('cursor_copy', 'false', r'''
             if true, use the system allocator to make a copy of any data returned by a cursor
             operation and return the copy instead. The copy is freed on the next cursor
@@ -692,6 +692,10 @@ connection_runtime_config = [
             if true, modify internal algorithms to change skew to force history store eviction
             to happen more aggressively. This includes but is not limited to not skewing newest,
             not favoring leaf pages, and modifying the eviction score mechanism.''',
+            type='boolean'),
+        Config('eviction_checkpoint_ts_ordering', 'false', r'''
+            if true, act as if eviction is being run in parallel to checkpoint. We should return
+            EBUSY in eviction if we detect any timestamp ordering issue.''',
             type='boolean'),
         Config('log_retention', '0', r'''
             adjust log removal to retain at least this number of log files.
@@ -735,26 +739,12 @@ connection_runtime_config = [
         Config('update_restore_evict', 'false', r'''
             if true, control all dirty page evictions through forcing update restore eviction.''',
             type='boolean'),
-        Config('eviction_checkpoint_ts_ordering', 'false', r'''
-            if true, act as if eviction is being run in parallel to checkpoint. We should return
-            EBUSY in eviction if we detect any timestamp ordering issue.''',
-            type='boolean'),
         ]),
     Config('error_prefix', '', r'''
         prefix string for error messages'''),
     Config('eviction', '', r'''
         eviction configuration options''',
         type='category', subconfig=[
-            Config('threads_max', '8', r'''
-                maximum number of threads WiredTiger will start to help evict pages from cache. The
-                number of threads started will vary depending on the current eviction load. Each
-                eviction worker thread uses a session from the configured session_max''',
-                min=1, max=64), # !!! Must match WT_EVICT_MAX_WORKERS
-            Config('threads_min', '1', r'''
-                minimum number of threads WiredTiger will start to help evict pages from
-                cache. The number of threads currently running will vary depending on the
-                current eviction load''',
-                min=1, max=64),
             Config('evict_sample_inmem', 'true', r'''
                 If no in-memory ref is found on the root page, attempt to locate a random
                 in-memory page by examining all entries on the root page.''',
@@ -769,6 +759,16 @@ connection_runtime_config = [
                 Use legacy page visit strategy for eviction. Using this option is highly discouraged
                 as it will re-introduce the bug described in WT-9121.''',
                 type='boolean'),
+            Config('threads_max', '8', r'''
+                maximum number of threads WiredTiger will start to help evict pages from cache. The
+                number of threads started will vary depending on the current eviction load. Each
+                eviction worker thread uses a session from the configured session_max''',
+                min=1, max=64), # !!! Must match WT_EVICT_MAX_WORKERS
+            Config('threads_min', '1', r'''
+                minimum number of threads WiredTiger will start to help evict pages from
+                cache. The number of threads currently running will vary depending on the
+                current eviction load''',
+                min=1, max=64),
             ]),
     Config('eviction_checkpoint_target', '1', r'''
         perform eviction at the beginning of checkpoints to bring the dirty content in cache
@@ -880,14 +880,14 @@ connection_runtime_config = [
         control how many bytes per second are written and read. Exceeding the capacity results
         in throttling.''',
         type='category', subconfig=[
+        Config('chunk_cache', '0', r'''
+            number of bytes per second available to the chunk cache. The minimum non-zero setting
+            is 1MB.''',
+            min='0', max='1TB'),
         Config('total', '0', r'''
             number of bytes per second available to all subsystems in total. When set,
             decisions about what subsystems are throttled, and in what proportion, are made
             internally. The minimum non-zero setting is 1MB.''',
-            min='0', max='1TB'),
-        Config('chunk_cache', '0', r'''
-            number of bytes per second available to the chunk cache. The minimum non-zero setting
-            is 1MB.''',
             min='0', max='1TB'),
         ]),
     Config('json_output', '[]', r'''
@@ -1249,10 +1249,6 @@ wiredtiger_open_chunk_cache_configuration = [
         Config('chunk_size', '1MB', r'''
             size of cached chunks''',
             min='512KB', max='100GB'),
-        Config('storage_path', '', r'''
-            the path (absolute or relative) to the file used as cache location. This should be on a
-            filesystem that supports file truncation. All filesystems in common use
-            meet this criteria.'''),
         Config('enabled', 'false', r'''
             enable chunk cache''',
             type='boolean'),
@@ -1262,6 +1258,10 @@ wiredtiger_open_chunk_cache_configuration = [
         Config('flushed_data_cache_insertion', 'true', r'''
             enable caching of freshly-flushed data, before it is removed locally.''',
             type='boolean', undoc=True),
+        Config('storage_path', '', r'''
+            the path (absolute or relative) to the file used as cache location. This should be on a
+            filesystem that supports file truncation. All filesystems in common use
+            meet this criteria.'''),
         Config('type', 'FILE', r'''
             cache location, defaults to the file system.''',
             choices=['FILE', 'DRAM'], undoc=True),
@@ -1351,14 +1351,14 @@ wiredtiger_open_common =\
         set, it is also used for encrypting data files and tables, unless encryption configuration
         is explicitly set for them when they are created with WT_SESSION::create''',
         type='category', subconfig=[
-        Config('name', 'none', r'''
-            Permitted values are \c "none" or a custom encryption engine name created with
-            WT_CONNECTION::add_encryptor. See @ref encryption for more information'''),
         Config('keyid', '', r'''
             An identifier that identifies a unique instance of the encryptor. It is stored in
             clear text, and thus is available when the WiredTiger database is reopened. On the
             first use of a (name, keyid) combination, the WT_ENCRYPTOR::customize function is
             called with the keyid as an argument'''),
+        Config('name', 'none', r'''
+            Permitted values are \c "none" or a custom encryption engine name created with
+            WT_CONNECTION::add_encryptor. See @ref encryption for more information'''),
         Config('secretkey', '', r'''
             A string that is passed to the WT_ENCRYPTOR::customize function. It is never stored
             in clear text, so must be given to any subsequent ::wiredtiger_open calls to reopen the
@@ -1401,6 +1401,12 @@ wiredtiger_open_common =\
         permit sharing between processes (will automatically start an RPC server for primary
         processes and use RPC for secondary processes). <b>Not yet supported in WiredTiger</b>''',
         type='boolean'),
+    Config('precise_checkpoint', 'false', r'''
+            Only write data with timestamps that are smaller or equal to the stable timestamp to the
+            checkpoint. Rollback to stable after restart is a no-op if enabled. However, it leads to
+            extra cache pressure. The user must have set the stable timestamp. It is not compatible
+            with use_timestamp=false config.''',
+            type='boolean'),
     Config('prefetch', '', r'''
         Enable automatic detection of scans by applications, and attempt to pre-fetch future
         content into the cache''',
@@ -1412,12 +1418,6 @@ wiredtiger_open_common =\
             whether pre-fetch is enabled for all sessions by default''',
             type='boolean'),
         ]),
-    Config('precise_checkpoint', 'false', r'''
-            Only write data with timestamps that are smaller or equal to the stable timestamp to the
-            checkpoint. Rollback to stable after restart is a no-op if enabled. However, it leads to
-            extra cache pressure. The user must have set the stable timestamp. It is not compatible
-            with use_timestamp=false config.''',
-            type='boolean'),
     Config('preserve_prepared', 'false', r'''
         open connection in preserve prepare mode. All the prepared transactions that are
         not yet committed or rolled back will be preserved in the database. This is useful for
@@ -1501,13 +1501,13 @@ cursor_bound_config = [
         must also be specified. The keys relevant to the given bound must have been set prior to the
         call using WT_CURSOR::set_key.''',
         choices=['clear','set']),
-    Config('inclusive', 'true', r'''
-        configures whether the given bound is inclusive or not.''',
-        type='boolean'),
     Config('bound', '', r'''
         configures which bound is being operated on. It takes one of two values, "lower" or "upper".
         ''',
         choices=['lower','upper']),
+    Config('inclusive', 'true', r'''
+        configures whether the given bound is inclusive or not.''',
+        type='boolean'),
 ]
 
 cursor_runtime_config = [
@@ -1699,8 +1699,9 @@ methods = {
                 Config('enabled', 'false', r'''
                     enable version cursor''',
                     type='boolean', undoc=True),
-                Config('visible_only', 'false', r'''
-                    only dump updates that are visible to the session''',
+                Config('raw_key_value', 'false', r'''
+                    Return the key, value as raw data.
+                    ''',
                     type='boolean', undoc=True),
                 Config('start_timestamp', '', r'''
                     Only return updates with durable timestamps larger than the start timestamp. If
@@ -1712,9 +1713,8 @@ methods = {
                     updates and updates that are from the same transaction with the same timestamp.
                     ''',
                     type='boolean', undoc=True),
-                Config('raw_key_value', 'false', r'''
-                    Return the key, value as raw data.
-                    ''',
+                Config('visible_only', 'false', r'''
+                    only dump updates that are visible to the session''',
                     type='boolean', undoc=True),
         ]),
         Config('release_evict', 'false', r'''
@@ -1855,21 +1855,17 @@ methods = {
         handler, intended for debugging. Disabling this does not guarantee that no user data will
         be output''',
         type='boolean'),
+    Config('dump_blocks', 'false', r'''
+        Display the contents of on-disk blocks as they are verified, using the application's
+        message handler, intended for debugging''',
+        type='boolean'),
     Config('dump_key_data', 'false', r'''
         Display application data keys as pages or blocks are verified, using the application's
         message handler, intended for debugging. Disabling this does not guarantee that no user
         data will be output''',
         type='boolean'),
-    Config('dump_blocks', 'false', r'''
-        Display the contents of on-disk blocks as they are verified, using the application's
-        message handler, intended for debugging''',
-        type='boolean'),
     Config('dump_layout', 'false', r'''
         Display the layout of the files as they are verified, using the application's message
-        handler, intended for debugging; requires optional support from the block manager''',
-        type='boolean'),
-    Config('dump_tree_shape', 'false', r'''
-        Display the btree shapes as they are verified, using the application's message
         handler, intended for debugging; requires optional support from the block manager''',
         type='boolean'),
     Config('dump_offsets', '', r'''
@@ -1879,6 +1875,10 @@ methods = {
     Config('dump_pages', 'false', r'''
         Display the contents of in-memory pages as they are verified, using the application's
         message handler, intended for debugging''',
+        type='boolean'),
+    Config('dump_tree_shape', 'false', r'''
+        Display the btree shapes as they are verified, using the application's message
+        handler, intended for debugging; requires optional support from the block manager''',
         type='boolean'),
     Config('read_corrupt', 'false', r'''
         A mode that allows verify to continue reading after encountering a checksum error. It
@@ -1895,6 +1895,10 @@ methods = {
 ]),
 
 'WT_SESSION.begin_transaction' : Method([
+    Config('claim_prepared_id', '', r'''
+        allow a session to claim a prepared transaction that was restored upon restart by
+        specifying the transaction's prepared ID. Returns WT_NOTFOUND if the prepared id doesn't
+        exist.''')
     Config('ignore_prepare', 'false', r'''
         whether to ignore updates by other prepared transactions when doing of read operations
         of this transaction. When \c true, forces the transaction to be read-only. Use \c force
@@ -1948,10 +1952,6 @@ methods = {
         whether to sync log records when the transaction commits, inherited from ::wiredtiger_open
         \c transaction_sync''',
         type='boolean'),
-    Config('claim_prepared_id', '', r'''
-        allow a session to claim a prepared transaction that was restored upon restart by
-        specifying the transaction's prepared ID. Returns WT_NOTFOUND if the prepared id doesn't
-        exist.''')
 ], compilable=True),
 
 'WT_SESSION.commit_transaction' : Method([
